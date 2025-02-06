@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Packet Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Network Packet Analyzer</h1>
+                <p class="text-gray-600">Upload your PCAP file for detailed network traffic analysis</p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <form action="/upload" method="post" enctype="multipart/form-data" class="dropzone" id="pcapUploader">
+                    <div class="fallback">
+                        <input type="file" name="file" accept=".pcap,.pcapng">
+                    </div>
+                </form>
+
+                <!-- Instructions -->
+                <div class="mt-6 p-4 bg-blue-50 rounded-md">
+                    <h2 class="text-lg font-semibold text-blue-800 mb-2">Instructions:</h2>
+                    <ul class="text-blue-700 space-y-2">
+                        <li>• Drag and drop your PCAP file or click to select</li>
+                        <li>• Supported formats: .pcap, .pcapng</li>
+                        <li>• Maximum file size: 16MB</li>
+                    </ul>
+                </div>
+
+                <!-- Features -->
+                <div class="mt-8">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Analysis Features:</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-50 rounded-md">
+                            <h3 class="font-medium text-gray-800 mb-2">Protocol Analysis</h3>
+                            <p class="text-gray-600">Detailed breakdown of network protocols</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-md">
+                            <h3 class="font-medium text-gray-800 mb-2">Traffic Patterns</h3>
+                            <p class="text-gray-600">Source/destination IP analysis</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-md">
+                            <h3 class="font-medium text-gray-800 mb-2">TCP Analysis</h3>
+                            <p class="text-gray-600">Connection tracking and flag analysis</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-md">
+                            <h3 class="font-medium text-gray-800 mb-2">Port Statistics</h3>
+                            <p class="text-gray-600">Most used ports and services</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Dropzone.options.pcapUploader = {
+            acceptedFiles: ".pcap,.pcapng",
+            maxFilesize: 16,
+            createImageThumbnails: false,
+            dictDefaultMessage: "Drop your PCAP file here or click to upload",
+            init: function() {
+                this.on("success", function(file, response) {
+                    document.open();
+                    document.write(response);
+                    document.close();
+                });
+                this.on("error", function(file, errorMessage) {
+                    alert(errorMessage);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
