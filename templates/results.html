@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packet Analysis Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Packet Analysis Results</h1>
+            <a href="/" class="text-blue-600 hover:text-blue-800">← Upload Another File</a>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Total Packets</h2>
+                <p class="text-3xl font-bold text-blue-600">{{ results.total_packets }}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Average Packet Size</h2>
+                <p class="text-3xl font-bold text-blue-600">{{ "%.2f"|format(results.packet_stats.avg_length) }} bytes</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Protocol Distribution</h2>
+                <canvas id="protocolChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Analysis -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- TCP Analysis -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">TCP Analysis</h2>
+                {% if results.tcp_stats %}
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total SYN:</span>
+                        <span class="font-medium">{{ results.tcp_stats.total_syn }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Established Connections:</span>
+                        <span class="font-medium">{{ results.tcp_stats.established_connections }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Reset Connections:</span>
+                        <span class="font-medium">{{ results.tcp_stats.reset_connections }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Completion Rate:</span>
+                        <span class="font-medium">{{ "%.2f"|format(results.tcp_stats.completion_rate) }}%</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Top Ports -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Top Ports</h2>
+                <div class="space-y-4">
+                    <h3 class="font-medium text-gray-700">TCP Ports</h3>
+                    <div class="space-y-2">
+                        {% for port, count in results.top_tcp_ports.items() %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Port {{ port }}</span>
+                            <span class="font-medium">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <h3 class="font-medium text-gray-700 mt-6">UDP Ports</h3>
+                    <div class="space-y-2">
+                        {% for port, count in results.top_udp_ports.items() %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Port {{ port }}</span>
+                            <span class="font-medium">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- IP Analysis -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Top IP Addresses</h2>
+                <div class="space-y-4">
+                    <h3 class="font-medium text-gray-700">Source IPs</h3>
+                    <div class="space-y-2">
+                        {% for ip, count in results.top_source_ips.items() %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">{{ ip }}</span>
+                            <span class="font-medium">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversations -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Top Conversations</h2>
+                <div class="space-y-2">
+                    {% for conv, count in results.top_conversations.items() %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">{{ conv }}</span>
+                        <span class="font-medium">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create protocol distribution chart
+        const protocolCtx = document.getElementById('protocolChart').getContext('2d');
+        new Chart(protocolCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ results.protocols.keys()|list|tojson }},
+                datasets: [{
+                    data: {{ results.protocols.values()|list|tojson }},
+                    backgroundColor: [
+                        '#3B82F6',
+                        '#10B981',
+                        '#F59E0B',
+                        '#EF4444'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
